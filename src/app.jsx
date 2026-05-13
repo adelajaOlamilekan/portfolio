@@ -544,7 +544,7 @@ export default function Portfolio() {
             <div style={{ display: "flex", gap: 48, marginTop: 64 }}>
               {[
                 ["94%", "DB latency cut"],
-                ["3+", "years experience"],
+                ["4+", "years experience"],
                 ["70%", "UX improvements"],
                 ["12+", "engineers mentored"],
               ].map(([num, lbl]) => (
