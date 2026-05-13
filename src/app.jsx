@@ -495,7 +495,7 @@ export default function Portfolio() {
                   textTransform: "uppercase",
                 }}
               >
-                Available for mid-level roles
+                Available to build great produts
               </span>
             </div>
             <h1
