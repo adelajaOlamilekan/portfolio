@@ -363,7 +363,7 @@ export default function Portfolio() {
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
               {[
                 { label: "University", val: "University of Lagos", sub: "B.Sc. Electrical & Electronics Eng." },
-                { label: "CGPA", val: "4.11 / 5.00", sub: "First Class Honours track" },
+                { label: "CGPA", val: "4.11 / 5.00", sub: "Second Class Upper Honours track" },
                 { label: "Location", val: "Lagos, Nigeria", sub: "Open to remote" },
                 { label: "Focus", val: "Backend Systems", sub: "FastAPI · Django · Redis" },
               ].map(({ label, val, sub }) => (
@@ -538,16 +538,16 @@ export default function Portfolio() {
               <p style={{ fontSize: 16, color: "rgba(232,237,232,0.6)", lineHeight: 1.8, marginBottom: 32, fontFamily: "Lora, serif" }}>
                 Whether you need a rock-solid backend system, a security-conscious API, or just want to talk shop — I'm ready.
               </p>
-              <button className="cta-btn" onClick={() => window.open("mailto:abdulqowiyyuolamilekan@gmail.com")}>
+              <button className="cta-btn" onClick={() => window.open("mailto:tech@qowiyyu.com")}>
                 Send an Email
               </button>
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
               {[
-                { icon: "✉", label: "Email", val: "abdulqowiyyuolamilekan@gmail.com", href: "mailto:abdulqowiyyuolamilekan@gmail.com" },
+                { icon: "✉", label: "Email", val: "tech@qowiyyu.com", href: "mailto:tech@qowiyyu.com" },
                 { icon: "📱", label: "Phone", val: "+234 808 367 4765", href: "tel:+2348083674765" },
-                { icon: "🔗", label: "LinkedIn", val: "linkedin.com/in/qowiyyu", href: "#" },
-                { icon: "💻", label: "GitHub", val: "github.com/qowiyyu", href: "#" },
+                { icon: "🔗", label: "LinkedIn", val: "linkedin.com/in/qowiyyu", href: "https://www.linkedin.com/in/qowiyyuadelaja" },
+                { icon: "💻", label: "GitHub", val: "github.com/qowiyyu", href: "https://github.com/adelajaOlamilekan" },
               ].map(c => (
                 <a key={c.label} href={c.href} className="contact-item" style={{ textDecoration: "none", color: "inherit" }}>
                   <div className="contact-icon"><span>{c.icon}</span></div>
@@ -569,7 +569,7 @@ export default function Portfolio() {
             © {new Date().getFullYear()} Qowiyyu Olamilekan Adelaja
           </span>
           <span style={{ fontSize: 13, color: "rgba(232,237,232,0.3)" }}>
-            Backend Engineer · MMA Practitioner · Lagos, NG
+            Backend Engineer · Distributed Engineer. Infrastructure Engineer . MMA Practitioner · Lagos, NG
           </span>
         </div>
       </footer>
