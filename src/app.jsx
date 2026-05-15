@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 
+/* ─── DATA ───────────────────────────────────────────────────────────────── */
 const NAV_ITEMS = [
   "Home",
   "About",
@@ -133,62 +134,81 @@ const BLOG_POSTS = [
   },
 ];
 
-const MMA_CONTENT = {
-  bio: "Mixed Martial Arts isn't just a hobby — it's a discipline that mirrors the demands of engineering. Both require systematic thinking, composure under pressure, and a relentless drive to improve.",
-  disciplines: ["Brazilian Jiu-Jitsu", "Muay Thai", "Wrestling", "Boxing"],
-  values: [
-    {
-      label: "Discipline",
-      icon: "🔩",
-      desc: "Consistent training translates into consistent code.",
-    },
-    {
-      label: "Pressure Testing",
-      icon: "⚡",
-      desc: "Systems fail under load — so does technique. Both must be stress-tested.",
-    },
-    {
-      label: "Adaptation",
-      icon: "🔄",
-      desc: "Every opponent and every codebase is different. Adapt fast or lose.",
-    },
-  ],
-};
+const MMA_VALUES = [
+  {
+    label: "Discipline",
+    icon: "🔩",
+    desc: "Consistent training translates into consistent code.",
+  },
+  {
+    label: "Pressure Testing",
+    icon: "⚡",
+    desc: "Systems fail under load — so does technique. Both must be stress-tested.",
+  },
+  {
+    label: "Adaptation",
+    icon: "🔄",
+    desc: "Every opponent and every codebase is different. Adapt fast or lose.",
+  },
+];
 
-const useScrollSpy = (sections) => {
+const STATS = [
+  ["94%", "DB latency cut"],
+  ["3+", "years exp."],
+  ["70%", "UX boost"],
+  ["12+", "mentored"],
+];
+
+/* ─── HOOKS ──────────────────────────────────────────────────────────────── */
+function useWindowWidth() {
+  const [w, setW] = useState(
+    typeof window !== "undefined" ? window.innerWidth : 1200
+  );
+  useEffect(() => {
+    const fn = () => setW(window.innerWidth);
+    window.addEventListener("resize", fn);
+    return () => window.removeEventListener("resize", fn);
+  }, []);
+  return w;
+}
+
+function useScrollSpy() {
   const [active, setActive] = useState("Home");
   useEffect(() => {
-    const onScroll = () => {
-      let current = "Home";
-      for (const s of sections) {
+    const fn = () => {
+      let cur = "Home";
+      for (const s of NAV_ITEMS) {
         const el = document.getElementById(s.toLowerCase());
-        if (el && el.getBoundingClientRect().top <= 100) current = s;
+        if (el && el.getBoundingClientRect().top <= 80) cur = s;
       }
-      setActive(current);
+      setActive(cur);
     };
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, [sections]);
+    window.addEventListener("scroll", fn, { passive: true });
+    return () => window.removeEventListener("scroll", fn);
+  }, []);
   return active;
-};
+}
 
-const scrollTo = (id) => {
-  const el = document.getElementById(id.toLowerCase());
-  if (el) el.scrollIntoView({ behavior: "smooth" });
-};
+/* ─── HELPERS ────────────────────────────────────────────────────────────── */
+const go = (id) =>
+  document
+    .getElementById(id.toLowerCase())
+    ?.scrollIntoView({ behavior: "smooth" });
 
-const Tag = ({ children, color = "#E8F0E9", text = "#1a5c1a" }) => (
+/* ─── SMALL COMPONENTS ───────────────────────────────────────────────────── */
+const Tag = ({ children, bg = "#E8F0E9", color = "#1a5c1a" }) => (
   <span
     style={{
-      background: color,
-      color: text,
-      fontSize: 11,
-      fontWeight: 600,
-      letterSpacing: "0.06em",
+      background: bg,
+      color,
+      fontSize: 10,
+      fontWeight: 700,
+      letterSpacing: "0.08em",
       padding: "3px 10px",
       borderRadius: 20,
       textTransform: "uppercase",
       display: "inline-block",
+      whiteSpace: "nowrap",
     }}
   >
     {children}
@@ -197,15 +217,15 @@ const Tag = ({ children, color = "#E8F0E9", text = "#1a5c1a" }) => (
 
 const SectionLabel = ({ children }) => (
   <div
-    style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 48 }}
+    style={{
+      display: "flex",
+      alignItems: "center",
+      gap: 12,
+      marginBottom: "clamp(28px,5vw,48px)",
+    }}
   >
     <span
-      style={{
-        width: 32,
-        height: 2,
-        background: "#B5F265",
-        display: "inline-block",
-      }}
+      style={{ width: 28, height: 2, background: "#B5F265", flexShrink: 0 }}
     />
     <span
       style={{
@@ -214,36 +234,54 @@ const SectionLabel = ({ children }) => (
         fontWeight: 700,
         color: "#B5F265",
         textTransform: "uppercase",
+        whiteSpace: "nowrap",
       }}
     >
       {children}
     </span>
     <span
-      style={{
-        flex: 1,
-        height: 1,
-        background: "rgba(255,255,255,0.07)",
-        display: "inline-block",
-      }}
+      style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.07)" }}
     />
   </div>
 );
 
+/* ─── MAIN ───────────────────────────────────────────────────────────────── */
 export default function Portfolio() {
-  const active = useScrollSpy(NAV_ITEMS);
-  const [menuOpen, setMenuOpen] = useState(false);
-  const [hoveredExp, setHoveredExp] = useState(null);
+  const w = useWindowWidth();
+  const active = useScrollSpy();
+  const isMobile = w < 640;
+  const isTablet = w >= 640 && w < 1024;
+  const isNarrow = w < 1024; // mobile + tablet → hamburger
+  const [menu, setMenu] = useState(false);
   const [flipped, setFlipped] = useState({});
+  const [hovExp, setHovExp] = useState(null);
   const canvasRef = useRef(null);
 
-  // Animated particle grid background
+  /* lock body scroll when drawer open */
+  useEffect(() => {
+    document.body.style.overflow = menu ? "hidden" : "";
+  }, [menu]);
+
+  /* close drawer on scroll */
+  useEffect(() => {
+    const fn = () => menu && setMenu(false);
+    window.addEventListener("scroll", fn, { passive: true });
+    return () => window.removeEventListener("scroll", fn);
+  }, [menu]);
+
+  /* particles */
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-    const dots = Array.from({ length: 80 }, () => ({
+    const resize = () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    };
+    resize();
+    const n = w < 640 ? 30 : 70;
+    const link = w < 640 ? 80 : 120;
+    const dots = Array.from({ length: n }, () => ({
       x: Math.random() * canvas.width,
       y: Math.random() * canvas.height,
       vx: (Math.random() - 0.5) * 0.3,
@@ -253,7 +291,7 @@ export default function Portfolio() {
     let raf;
     const draw = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      for (const d of dots) {
+      dots.forEach((d) => {
         d.x += d.vx;
         d.y += d.vy;
         if (d.x < 0 || d.x > canvas.width) d.vx *= -1;
@@ -262,29 +300,24 @@ export default function Portfolio() {
         ctx.arc(d.x, d.y, d.r, 0, Math.PI * 2);
         ctx.fillStyle = "rgba(181,242,101,0.18)";
         ctx.fill();
-      }
-      for (let i = 0; i < dots.length; i++) {
+      });
+      for (let i = 0; i < dots.length; i++)
         for (let j = i + 1; j < dots.length; j++) {
           const dx = dots[i].x - dots[j].x,
             dy = dots[i].y - dots[j].y;
           const dist = Math.sqrt(dx * dx + dy * dy);
-          if (dist < 120) {
+          if (dist < link) {
             ctx.beginPath();
             ctx.moveTo(dots[i].x, dots[i].y);
             ctx.lineTo(dots[j].x, dots[j].y);
-            ctx.strokeStyle = `rgba(181,242,101,${0.07 * (1 - dist / 120)})`;
+            ctx.strokeStyle = `rgba(181,242,101,${0.07 * (1 - dist / link)})`;
             ctx.lineWidth = 0.5;
             ctx.stroke();
           }
         }
-      }
       raf = requestAnimationFrame(draw);
     };
     draw();
-    const resize = () => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-    };
     window.addEventListener("resize", resize);
     return () => {
       cancelAnimationFrame(raf);
@@ -292,103 +325,213 @@ export default function Portfolio() {
     };
   }, []);
 
-  const toggleFlip = (i) => setFlipped((f) => ({ ...f, [i]: !f[i] }));
+  const navClick = (item) => {
+    go(item);
+    setMenu(false);
+  };
+  const flip = (i) => setFlipped((f) => ({ ...f, [i]: !f[i] }));
+
+  /* ── STYLES ── (injected once) */
+  const css = `
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Lora:ital,wght@0,400;0,500;1,400&display=swap');
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+    body{background:#0A0C0A;overscroll-behavior-y:none}
+    ::selection{background:#B5F265;color:#0A0C0A}
+
+    /* ── fluid type ── */
+    .t-hero{font-size:clamp(38px,9vw,86px);font-weight:800;line-height:1.04;letter-spacing:-0.02em}
+    .t-h2  {font-size:clamp(26px,5vw,42px);font-weight:800;line-height:1.1;letter-spacing:-0.02em}
+    .t-h3  {font-size:clamp(15px,2.2vw,19px);font-weight:700;line-height:1.3}
+    .t-body{font-size:clamp(14px,1.7vw,16px);line-height:1.78;font-family:Lora,serif}
+    .t-sm  {font-size:clamp(12px,1.3vw,13px)}
+    .lbl   {font-size:11px;font-weight:700;letter-spacing:.15em;text-transform:uppercase}
+
+    /* ── layout ── */
+    .sp  {padding:clamp(56px,9vw,108px) 0}
+    .wrap{width:100%;max-width:1120px;margin:0 auto;
+          padding-left:clamp(16px,4.5vw,40px);padding-right:clamp(16px,4.5vw,40px)}
+
+    /* ── nav ── */
+    .nl{background:none;border:none;color:rgba(232,237,232,.5);font-family:Syne,sans-serif;
+        font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;
+        cursor:pointer;transition:color .2s;padding:6px 0;min-height:44px;
+        display:inline-flex;align-items:center}
+    .nl:hover,.nl.on{color:#B5F265}
+    .nl.on{border-bottom:1px solid #B5F265}
+
+    /* ── mobile nav overlay ── */
+    .moverlay{position:fixed;inset:0;z-index:200;background:rgba(10,12,10,.97);
+      backdrop-filter:blur(20px);display:flex;flex-direction:column;
+      align-items:center;justify-content:center;gap:4px;
+      transition:opacity .28s,visibility .28s}
+    .moverlay.hide{opacity:0;visibility:hidden;pointer-events:none}
+    .moverlay.show{opacity:1;visibility:visible}
+    .mnl{background:none;border:none;color:rgba(232,237,232,.6);font-family:Syne,sans-serif;
+         font-size:clamp(22px,6vw,30px);font-weight:700;cursor:pointer;
+         padding:10px 20px;min-height:54px;transition:color .2s;letter-spacing:-0.01em;
+         width:100%;text-align:center}
+    .mnl:hover,.mnl.on{color:#B5F265}
+
+    /* ── hamburger ── */
+    .hbg{background:none;border:none;cursor:pointer;width:44px;height:44px;
+         display:flex;flex-direction:column;align-items:center;justify-content:center;
+         gap:5px;padding:0;z-index:301;position:relative}
+    .hbar{width:22px;height:2px;background:#E8EDE8;border-radius:2px;
+          transition:transform .3s,opacity .3s}
+    .hbg.x .hbar:nth-child(1){transform:translateY(7px) rotate(45deg)}
+    .hbg.x .hbar:nth-child(2){opacity:0}
+    .hbg.x .hbar:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
+
+    /* ── buttons ── */
+    .btn-green{background:#B5F265;color:#0A0C0A;border:none;
+      padding:clamp(11px,1.8vw,14px) clamp(22px,3vw,32px);border-radius:40px;
+      font-family:Syne,sans-serif;font-size:clamp(13px,1.4vw,14px);font-weight:700;
+      letter-spacing:.06em;cursor:pointer;transition:all .2s;
+      min-height:48px;display:inline-flex;align-items:center}
+    .btn-green:hover{background:#C8F77A;transform:translateY(-2px);
+      box-shadow:0 8px 28px rgba(181,242,101,.22)}
+    .btn-outline{background:transparent;color:#E8EDE8;
+      border:1px solid rgba(255,255,255,.25);
+      padding:clamp(10px,1.8vw,13px) clamp(20px,3vw,30px);border-radius:40px;
+      font-family:Syne,sans-serif;font-size:clamp(13px,1.4vw,14px);font-weight:600;
+      letter-spacing:.06em;cursor:pointer;transition:all .2s;
+      min-height:48px;display:inline-flex;align-items:center}
+    .btn-outline:hover{border-color:#B5F265;color:#B5F265}
+
+    /* ── cards ── */
+    .exp-card{border:1px solid rgba(255,255,255,.07);border-radius:16px;
+      padding:clamp(16px,2.5vw,28px) clamp(16px,2.5vw,32px);
+      transition:border-color .3s,transform .3s}
+    .exp-card:hover{border-color:rgba(181,242,101,.35);transform:translateY(-2px)}
+    @media(hover:none){.exp-card:hover{transform:none}}
+
+    .blog-card{border:1px solid rgba(255,255,255,.07);border-radius:16px;
+      padding:clamp(16px,2.5vw,26px) clamp(16px,2.5vw,26px) clamp(14px,2vw,22px);
+      transition:all .3s;cursor:pointer;background:rgba(255,255,255,.02)}
+    .blog-card:hover{border-color:rgba(181,242,101,.3);transform:translateY(-3px)}
+    @media(hover:none){.blog-card:hover{transform:none}}
+
+    .pill{display:inline-block;border:1px solid rgba(181,242,101,.25);
+      background:rgba(181,242,101,.06);color:rgba(232,237,232,.85);
+      font-size:clamp(12px,1.3vw,13px);font-weight:600;
+      padding:6px clamp(10px,1.8vw,14px);border-radius:24px;margin:4px;
+      transition:all .2s;white-space:nowrap}
+    .pill:hover{background:rgba(181,242,101,.15);color:#B5F265;border-color:#B5F265}
+
+    /* ── flip card ── */
+    .flip-wrap{width:100%;height:clamp(158px,20vw,196px);perspective:1000px;cursor:pointer}
+    .flip-inner{width:100%;height:100%;position:relative;
+      transform-style:preserve-3d;transition:transform .55s cubic-bezier(.4,0,.2,1)}
+    .flip-inner.done{transform:rotateY(180deg)}
+    .flip-face{position:absolute;inset:0;backface-visibility:hidden;border-radius:14px;
+      display:flex;flex-direction:column;align-items:center;justify-content:center;
+      gap:10px;border:1px solid rgba(255,255,255,.1);padding:clamp(12px,2vw,18px)}
+    .flip-back{transform:rotateY(180deg);background:rgba(181,242,101,.08);
+      border-color:rgba(181,242,101,.25);text-align:center}
+
+    /* ── contact ── */
+    .ci{display:flex;align-items:center;gap:12px;
+      padding:clamp(12px,1.8vw,14px) clamp(14px,2vw,20px);
+      border:1px solid rgba(255,255,255,.07);border-radius:12px;
+      transition:border-color .2s;text-decoration:none;color:inherit;min-height:56px}
+    .ci:hover{border-color:rgba(181,242,101,.3)}
+
+    /* ── grids ── */
+    /* 2-col → 1-col below 700px */
+    .g2{display:grid;grid-template-columns:1fr 1fr;gap:clamp(18px,4vw,40px)}
+    @media(max-width:699px){.g2{grid-template-columns:1fr}}
+
+    /* 2-col info cards (always 2 cols, tighter on mobile) */
+    .ic{display:grid;grid-template-columns:1fr 1fr;gap:clamp(10px,1.8vw,16px)}
+
+    /* blog: auto-fill columns */
+    .bg{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(280px,100%),1fr));
+        gap:clamp(12px,2vw,20px)}
+
+    /* stat grid */
+    .sg{display:grid;gap:clamp(20px,4vw,48px)}
+    @media(max-width:480px){.sg{grid-template-columns:repeat(2,1fr)}}
+    @media(min-width:481px){.sg{grid-template-columns:repeat(4,auto)}}
+
+    /* ── misc ── */
+    .divider{width:100%;height:1px;
+      background:linear-gradient(90deg,transparent,rgba(181,242,101,.2),transparent)}
+    .green{color:#B5F265}
+    @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+    @media(prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;
+      animation-iteration-count:1!important;transition-duration:.01ms!important}}
+  `;
 
   return (
     <div
       style={{
         background: "#0A0C0A",
         color: "#E8EDE8",
-        fontFamily: "'Syne', 'Space Grotesk', sans-serif",
+        fontFamily: "'Syne',sans-serif",
         minHeight: "100vh",
         overflowX: "hidden",
       }}
     >
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Lora:ital,wght@0,400;0,500;1,400&display=swap');
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        ::selection { background: #B5F265; color: #0A0C0A; }
-        html { scroll-behavior: smooth; }
-        body { background: #0A0C0A; }
+      <style>{css}</style>
 
-        .nav-link { background: none; border: none; color: rgba(232,237,232,0.5); font-family: inherit; font-size: 13px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer; transition: color 0.2s; padding: 4px 0; }
-        .nav-link:hover, .nav-link.active { color: #B5F265; }
-        .nav-link.active { border-bottom: 1px solid #B5F265; }
-
-        .exp-card { border: 1px solid rgba(255,255,255,0.07); border-radius: 16px; padding: 28px 32px; transition: border-color 0.3s, transform 0.3s; cursor: default; }
-        .exp-card:hover { border-color: rgba(181,242,101,0.35); transform: translateY(-2px); }
-
-        .skill-pill { display: inline-block; border: 1px solid rgba(181,242,101,0.25); background: rgba(181,242,101,0.06); color: rgba(232,237,232,0.85); font-size: 13px; font-weight: 600; padding: 6px 14px; border-radius: 24px; margin: 4px; transition: all 0.2s; }
-        .skill-pill:hover { background: rgba(181,242,101,0.15); color: #B5F265; border-color: #B5F265; }
-
-        .blog-card { border: 1px solid rgba(255,255,255,0.07); border-radius: 16px; padding: 28px 28px 24px; transition: all 0.3s; cursor: pointer; }
-        .blog-card:hover { border-color: rgba(181,242,101,0.3); transform: translateY(-3px); }
-
-        .flip-card { width: 100%; height: 180px; perspective: 1000px; cursor: pointer; }
-        .flip-inner { width: 100%; height: 100%; position: relative; transform-style: preserve-3d; transition: transform 0.5s; }
-        .flip-inner.flipped { transform: rotateY(180deg); }
-        .flip-face { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; border-radius: 14px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; border: 1px solid rgba(255,255,255,0.1); }
-        .flip-back { transform: rotateY(180deg); background: rgba(181,242,101,0.08); border-color: rgba(181,242,101,0.25); padding: 16px; text-align: center; }
-
-        .cta-btn { background: #B5F265; color: #0A0C0A; border: none; padding: 14px 32px; border-radius: 40px; font-family: inherit; font-size: 14px; font-weight: 700; letter-spacing: 0.06em; cursor: pointer; transition: all 0.2s; }
-        .cta-btn:hover { background: #C8F77A; transform: translateY(-2px); box-shadow: 0 8px 30px rgba(181,242,101,0.25); }
-
-        .outline-btn { background: transparent; color: #E8EDE8; border: 1px solid rgba(255,255,255,0.25); padding: 13px 30px; border-radius: 40px; font-family: inherit; font-size: 14px; font-weight: 600; letter-spacing: 0.06em; cursor: pointer; transition: all 0.2s; }
-        .outline-btn:hover { border-color: #B5F265; color: #B5F265; }
-
-        .stat-num { font-size: 42px; font-weight: 800; color: #B5F265; line-height: 1; }
-        .stat-lbl { font-size: 13px; color: rgba(232,237,232,0.5); margin-top: 4px; letter-spacing: 0.05em; }
-
-        .section-pad { padding: 100px 0; }
-        .container { max-width: 1100px; margin: 0 auto; padding: 0 32px; }
-        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
-        .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
-        @media (max-width: 768px) {
-          .grid-2, .grid-3 { grid-template-columns: 1fr; }
-          .hero-title { font-size: 52px !important; }
-          .nav-desktop { display: none !important; }
-        }
-        .divider { width: 100%; height: 1px; background: linear-gradient(90deg, transparent, rgba(181,242,101,0.2), transparent); margin: 0; }
-        .progress-bar { height: 3px; background: rgba(181,242,101,0.15); border-radius: 2px; overflow: hidden; margin-top: 8px; }
-        .progress-fill { height: 100%; background: #B5F265; border-radius: 2px; transition: width 0.8s ease; }
-
-        .mma-badge { width: 56px; height: 56px; background: rgba(181,242,101,0.1); border: 1px solid rgba(181,242,101,0.25); border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 24px; }
-        
-        .contact-item { display: flex; align-items: center; gap: 12px; padding: 14px 20px; border: 1px solid rgba(255,255,255,0.07); border-radius: 12px; transition: border-color 0.2s; }
-        .contact-item:hover { border-color: rgba(181,242,101,0.3); }
-        .contact-icon { width: 38px; height: 38px; background: rgba(181,242,101,0.08); border-radius: 10px; display: flex; align-items: center; justify-content: center; }
-      `}</style>
-
-      {/* Google Fonts */}
-      <link rel="preconnect" href="https://fonts.googleapis.com" />
-
-      {/* Particle canvas */}
+      {/* ── PARTICLES ──────────────────────────────────────────────────────── */}
       <canvas
         ref={canvasRef}
+        aria-hidden="true"
         style={{
           position: "fixed",
-          top: 0,
-          left: 0,
+          inset: 0,
           zIndex: 0,
           pointerEvents: "none",
+          width: "100%",
+          height: "100%",
         }}
       />
 
-      {/* NAV */}
+      {/* ── MOBILE DRAWER ──────────────────────────────────────────────────── */}
       <nav
+        className={`moverlay ${menu ? "show" : "hide"}`}
+        aria-label="Mobile navigation"
+      >
+        {NAV_ITEMS.map((item) => (
+          <button
+            key={item}
+            className={`mnl ${active === item ? "on" : ""}`}
+            onClick={() => navClick(item)}
+          >
+            {item}
+          </button>
+        ))}
+        <div style={{ marginTop: 24 }}>
+          <a
+            href="mailto:abdulqowiyyuolamilekan@gmail.com"
+            style={{
+              fontSize: 12,
+              color: "rgba(232,237,232,.35)",
+              textDecoration: "none",
+            }}
+          >
+            abdulqowiyyuolamilekan@gmail.com
+          </a>
+        </div>
+      </nav>
+
+      {/* ── HEADER ─────────────────────────────────────────────────────────── */}
+      <header
         style={{
           position: "fixed",
           top: 0,
           left: 0,
           right: 0,
           zIndex: 100,
-          background: "rgba(10,12,10,0.85)",
+          background: "rgba(10,12,10,.9)",
           backdropFilter: "blur(20px)",
-          borderBottom: "1px solid rgba(255,255,255,0.06)",
+          borderBottom: "1px solid rgba(255,255,255,.06)",
         }}
       >
         <div
-          className="container"
+          className="wrap"
           style={{
             display: "flex",
             alignItems: "center",
@@ -396,8 +539,9 @@ export default function Portfolio() {
             height: 64,
           }}
         >
+          {/* Logo */}
           <button
-            onClick={() => scrollTo("home")}
+            onClick={() => navClick("home")}
             style={{
               background: "none",
               border: "none",
@@ -405,6 +549,7 @@ export default function Portfolio() {
               display: "flex",
               alignItems: "center",
               gap: 8,
+              minHeight: 44,
             }}
           >
             <span
@@ -423,7 +568,7 @@ export default function Portfolio() {
                   fontSize: 13,
                   fontWeight: 800,
                   color: "#0A0C0A",
-                  fontFamily: "Syne, sans-serif",
+                  fontFamily: "Syne,sans-serif",
                 }}
               >
                 Q
@@ -434,219 +579,228 @@ export default function Portfolio() {
                 fontSize: 14,
                 fontWeight: 700,
                 color: "#E8EDE8",
-                fontFamily: "Syne, sans-serif",
                 letterSpacing: "0.05em",
               }}
             >
               Qowiyyu
             </span>
           </button>
-          <div className="nav-desktop" style={{ display: "flex", gap: 28 }}>
-            {NAV_ITEMS.map((item) => (
-              <button
-                key={item}
-                className={`nav-link ${active === item ? "active" : ""}`}
-                onClick={() => scrollTo(item)}
-              >
-                {item}
-              </button>
-            ))}
-          </div>
-        </div>
-      </nav>
 
-      {/* HERO */}
+          {/* Desktop nav */}
+          {!isNarrow && (
+            <nav
+              style={{ display: "flex", gap: 24 }}
+              aria-label="Primary navigation"
+            >
+              {NAV_ITEMS.map((item) => (
+                <button
+                  key={item}
+                  className={`nl ${active === item ? "on" : ""}`}
+                  onClick={() => go(item)}
+                >
+                  {item}
+                </button>
+              ))}
+            </nav>
+          )}
+
+          {/* Hamburger */}
+          {isNarrow && (
+            <button
+              className={`hbg ${menu ? "x" : ""}`}
+              onClick={() => setMenu((v) => !v)}
+              aria-label={menu ? "Close menu" : "Open menu"}
+              aria-expanded={menu}
+            >
+              <span className="hbar" />
+              <span className="hbar" />
+              <span className="hbar" />
+            </button>
+          )}
+        </div>
+      </header>
+
+      {/* ══════════════════════════════════════════════════════════════════════
+          HERO
+      ══════════════════════════════════════════════════════════════════════ */}
       <section
         id="home"
         style={{
-          minHeight: "100vh",
+          minHeight: "100svh",
           display: "flex",
           alignItems: "center",
           position: "relative",
           zIndex: 1,
+          paddingTop: 64,
         }}
       >
-        <div className="container" style={{ paddingTop: 100 }}>
-          <div style={{ maxWidth: 760 }}>
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 10,
-                marginBottom: 24,
-              }}
-            >
-              <span
-                style={{
-                  width: 8,
-                  height: 8,
-                  borderRadius: "50%",
-                  background: "#B5F265",
-                  display: "inline-block",
-                  animation: "pulse 2s infinite",
-                }}
-              />
-              <span
-                style={{
-                  fontSize: 13,
-                  color: "#B5F265",
-                  fontWeight: 600,
-                  letterSpacing: "0.15em",
-                  textTransform: "uppercase",
-                }}
-              >
-                Available to build great produts
-              </span>
-            </div>
-            <h1
-              className="hero-title"
-              style={{
-                fontSize: 80,
-                fontWeight: 800,
-                lineHeight: 1.05,
-                marginBottom: 24,
-                color: "#E8EDE8",
-                letterSpacing: "-0.02em",
-              }}
-            >
-              Backend
-              <br />
-              <span style={{ color: "#B5F265" }}>Engineer.</span>
-            </h1>
-            <p
-              style={{
-                fontSize: 18,
-                lineHeight: 1.7,
-                color: "rgba(232,237,232,0.6)",
-                maxWidth: 520,
-                marginBottom: 40,
-                fontFamily: "Lora, serif",
-              }}
-            >
-              Building scalable, high-performance systems across edtech,
-              e-commerce, and embedded domains. 3+ years of precision
-              engineering — and counting.
-            </p>
-            <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
-              <button
-                className="cta-btn"
-                onClick={() => scrollTo("experience")}
-              >
-                View My Work
-              </button>
-              <button
-                className="outline-btn"
-                onClick={() => scrollTo("contact")}
-              >
-                Get in Touch
-              </button>
-            </div>
-            <div style={{ display: "flex", gap: 48, marginTop: 64 }}>
-              {[
-                ["94%", "DB latency cut"],
-                ["4+", "years experience"],
-                ["70%", "UX improvements"],
-                ["12+", "engineers mentored"],
-              ].map(([num, lbl]) => (
-                <div key={lbl}>
-                  <div className="stat-num">{num}</div>
-                  <div className="stat-lbl">{lbl}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
         <div
+          className="wrap"
           style={{
-            position: "absolute",
-            bottom: 40,
-            left: "50%",
-            transform: "translateX(-50%)",
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            gap: 6,
-            opacity: 0.4,
+            paddingTop: "clamp(36px,7vh,80px)",
+            paddingBottom: "clamp(36px,7vh,80px)",
           }}
         >
-          <span
-            style={{
-              fontSize: 11,
-              letterSpacing: "0.15em",
-              color: "#E8EDE8",
-              textTransform: "uppercase",
-            }}
-          >
-            Scroll
-          </span>
           <div
             style={{
-              width: 1,
-              height: 40,
-              background: "rgba(232,237,232,0.3)",
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+              marginBottom: "clamp(14px,2.5vh,22px)",
             }}
-          />
+          >
+            <span
+              style={{
+                width: 8,
+                height: 8,
+                borderRadius: "50%",
+                background: "#B5F265",
+                flexShrink: 0,
+                animation: "pulse 2s infinite",
+              }}
+            />
+            <span className="lbl" style={{ color: "#B5F265" }}>
+              Let's Ship Great Products Together!
+            </span>
+          </div>
+
+          <h1
+            className="t-hero"
+            style={{ marginBottom: "clamp(14px,2.5vh,24px)" }}
+          >
+            Backend
+            <br />
+            <span className="green">Engineer.</span>
+          </h1>
+
+          <p
+            className="t-body"
+            style={{
+              color: "rgba(232,237,232,.6)",
+              maxWidth: "min(500px,100%)",
+              marginBottom: "clamp(26px,4vh,42px)",
+            }}
+          >
+            Building scalable, high-performance systems across edtech,
+            e-commerce, and embedded domains. 3+ years of precision engineering
+            — and counting.
+          </p>
+
+          <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+            <button className="btn-green" onClick={() => go("experience")}>
+              View My Work
+            </button>
+            <button className="btn-outline" onClick={() => go("contact")}>
+              Get in Touch
+            </button>
+          </div>
+
+          {/* Stats */}
+          <div className="sg" style={{ marginTop: "clamp(36px,7vh,68px)" }}>
+            {STATS.map(([num, lbl]) => (
+              <div key={lbl}>
+                <div
+                  style={{
+                    fontSize: "clamp(28px,5.5vw,44px)",
+                    fontWeight: 800,
+                    color: "#B5F265",
+                    lineHeight: 1,
+                  }}
+                >
+                  {num}
+                </div>
+                <div
+                  style={{
+                    fontSize: "clamp(11px,1.2vw,13px)",
+                    color: "rgba(232,237,232,.5)",
+                    marginTop: 4,
+                    letterSpacing: "0.04em",
+                  }}
+                >
+                  {lbl}
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
+
+        {/* Scroll hint – hidden on mobile */}
+        {!isMobile && (
+          <div
+            style={{
+              position: "absolute",
+              bottom: 28,
+              left: "50%",
+              transform: "translateX(-50%)",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              gap: 5,
+              opacity: 0.3,
+            }}
+          >
+            <span
+              style={{
+                fontSize: 10,
+                letterSpacing: "0.15em",
+                color: "#E8EDE8",
+                textTransform: "uppercase",
+              }}
+            >
+              Scroll
+            </span>
+            <div
+              style={{
+                width: 1,
+                height: 34,
+                background: "rgba(232,237,232,.3)",
+              }}
+            />
+          </div>
+        )}
       </section>
 
       <div className="divider" />
 
-      {/* ABOUT */}
+      {/* ══════════════════════════════════════════════════════════════════════
+          ABOUT
+      ══════════════════════════════════════════════════════════════════════ */}
       <section
         id="about"
-        className="section-pad"
+        className="sp"
         style={{ position: "relative", zIndex: 1 }}
       >
-        <div className="container">
+        <div className="wrap">
           <SectionLabel>About Me</SectionLabel>
-          <div className="grid-2" style={{ alignItems: "center", gap: 64 }}>
+          <div
+            className="g2"
+            style={{ alignItems: "center", gap: "clamp(28px,5vw,68px)" }}
+          >
             <div>
               <h2
-                style={{
-                  fontSize: 40,
-                  fontWeight: 800,
-                  lineHeight: 1.1,
-                  marginBottom: 24,
-                  letterSpacing: "-0.02em",
-                }}
+                className="t-h2"
+                style={{ marginBottom: "clamp(14px,2.5vw,22px)" }}
               >
                 Code, Combat &<br />
-                <span style={{ color: "#B5F265" }}>Craft</span>
+                <span className="green">Craft</span>
               </h2>
               <p
-                style={{
-                  fontSize: 16,
-                  lineHeight: 1.8,
-                  color: "rgba(232,237,232,0.65)",
-                  marginBottom: 20,
-                  fontFamily: "Lora, serif",
-                }}
+                className="t-body"
+                style={{ color: "rgba(232,237,232,.65)", marginBottom: 16 }}
               >
                 I'm Qowiyyu — a backend engineer with a degree in Electrical and
                 Electronics Engineering from the University of Lagos (CGPA:
                 4.11/5.00). I build systems that don't flinch under load.
               </p>
-              <p
-                style={{
-                  fontSize: 16,
-                  lineHeight: 1.8,
-                  color: "rgba(232,237,232,0.65)",
-                  fontFamily: "Lora, serif",
-                }}
-              >
+              <p className="t-body" style={{ color: "rgba(232,237,232,.65)" }}>
                 Outside the terminal, I train Mixed Martial Arts — a discipline
                 that's sharpened my thinking about resilience, adaptation, and
                 performing under pressure. Engineering and MMA demand the same
                 thing: relentless iteration.
               </p>
             </div>
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "1fr 1fr",
-                gap: 16,
-              }}
-            >
+
+            <div className="ic">
               {[
                 {
                   label: "University",
@@ -656,7 +810,7 @@ export default function Portfolio() {
                 {
                   label: "CGPA",
                   val: "4.11 / 5.00",
-                  sub: "First Class Honours track",
+                  sub: "Second Class Upper Honours track",
                 },
                 {
                   label: "Location",
@@ -672,30 +826,34 @@ export default function Portfolio() {
                 <div
                   key={label}
                   style={{
-                    background: "rgba(255,255,255,0.03)",
-                    border: "1px solid rgba(255,255,255,0.07)",
+                    background: "rgba(255,255,255,.03)",
+                    border: "1px solid rgba(255,255,255,.07)",
                     borderRadius: 14,
-                    padding: 20,
+                    padding: "clamp(12px,2vw,20px)",
                   }}
                 >
                   <div
-                    style={{
-                      fontSize: 11,
-                      color: "#B5F265",
-                      fontWeight: 700,
-                      letterSpacing: "0.1em",
-                      textTransform: "uppercase",
-                      marginBottom: 6,
-                    }}
+                    className="lbl"
+                    style={{ color: "#B5F265", marginBottom: 6 }}
                   >
                     {label}
                   </div>
                   <div
-                    style={{ fontSize: 15, fontWeight: 700, marginBottom: 4 }}
+                    style={{
+                      fontSize: "clamp(13px,1.5vw,15px)",
+                      fontWeight: 700,
+                      marginBottom: 4,
+                    }}
                   >
                     {val}
                   </div>
-                  <div style={{ fontSize: 12, color: "rgba(232,237,232,0.4)" }}>
+                  <div
+                    style={{
+                      fontSize: "clamp(11px,1.1vw,12px)",
+                      color: "rgba(232,237,232,.4)",
+                      lineHeight: 1.4,
+                    }}
+                  >
                     {sub}
                   </div>
                 </div>
@@ -707,26 +865,35 @@ export default function Portfolio() {
 
       <div className="divider" />
 
-      {/* EXPERIENCE */}
+      {/* ══════════════════════════════════════════════════════════════════════
+          EXPERIENCE
+      ══════════════════════════════════════════════════════════════════════ */}
       <section
         id="experience"
-        className="section-pad"
+        className="sp"
         style={{ position: "relative", zIndex: 1 }}
       >
-        <div className="container">
+        <div className="wrap">
           <SectionLabel>Experience</SectionLabel>
-          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: "clamp(10px,1.8vw,14px)",
+            }}
+          >
             {EXPERIENCE.map((exp, i) => (
               <div
                 key={i}
                 className="exp-card"
-                onMouseEnter={() => setHoveredExp(i)}
-                onMouseLeave={() => setHoveredExp(null)}
+                onMouseEnter={() => setHovExp(i)}
+                onMouseLeave={() => setHovExp(null)}
                 style={{
                   background:
-                    hoveredExp === i ? "rgba(181,242,101,0.04)" : "transparent",
+                    hovExp === i ? "rgba(181,242,101,.04)" : "transparent",
                 }}
               >
+                {/* Header */}
                 <div
                   style={{
                     display: "flex",
@@ -734,26 +901,25 @@ export default function Portfolio() {
                     alignItems: "flex-start",
                     flexWrap: "wrap",
                     gap: 8,
-                    marginBottom: 16,
+                    marginBottom: "clamp(10px,1.8vw,16px)",
                   }}
                 >
-                  <div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
                     <div
                       style={{
                         display: "flex",
                         alignItems: "center",
-                        gap: 10,
+                        gap: 8,
+                        flexWrap: "wrap",
                         marginBottom: 4,
                       }}
                     >
-                      <h3 style={{ fontSize: 18, fontWeight: 700 }}>
-                        {exp.company}
-                      </h3>
+                      <h3 className="t-h3">{exp.company}</h3>
                       <Tag>{exp.type}</Tag>
                     </div>
                     <div
                       style={{
-                        fontSize: 14,
+                        fontSize: "clamp(12px,1.4vw,14px)",
                         color: "#B5F265",
                         fontWeight: 600,
                       }}
@@ -763,33 +929,35 @@ export default function Portfolio() {
                   </div>
                   <div
                     style={{
-                      fontSize: 13,
-                      color: "rgba(232,237,232,0.4)",
-                      fontFamily: "Lora, serif",
+                      fontSize: "clamp(11px,1.2vw,13px)",
+                      color: "rgba(232,237,232,.4)",
+                      fontFamily: "Lora,serif",
                       fontStyle: "italic",
-                      paddingTop: 4,
+                      flexShrink: 0,
                     }}
                   >
                     {exp.period}
                   </div>
                 </div>
+
+                {/* Bullets */}
                 <ul
                   style={{
                     listStyle: "none",
                     display: "flex",
                     flexDirection: "column",
-                    gap: 8,
+                    gap: "clamp(5px,1vw,8px)",
                   }}
                 >
                   {exp.bullets.map((b, j) => (
                     <li
                       key={j}
                       style={{
-                        fontSize: 14,
-                        color: "rgba(232,237,232,0.6)",
+                        fontSize: "clamp(12px,1.4vw,14px)",
+                        color: "rgba(232,237,232,.6)",
                         display: "flex",
                         gap: 10,
-                        lineHeight: 1.6,
+                        lineHeight: 1.65,
                       }}
                     >
                       <span
@@ -801,7 +969,7 @@ export default function Portfolio() {
                       >
                         →
                       </span>
-                      {b}
+                      <span>{b}</span>
                     </li>
                   ))}
                 </ul>
@@ -813,33 +981,35 @@ export default function Portfolio() {
 
       <div className="divider" />
 
-      {/* SKILLS */}
+      {/* ══════════════════════════════════════════════════════════════════════
+          SKILLS
+      ══════════════════════════════════════════════════════════════════════ */}
       <section
         id="skills"
-        className="section-pad"
+        className="sp"
         style={{ position: "relative", zIndex: 1 }}
       >
-        <div className="container">
+        <div className="wrap">
           <SectionLabel>Skills</SectionLabel>
-          <div style={{ display: "flex", flexDirection: "column", gap: 36 }}>
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: "clamp(22px,3.5vw,36px)",
+            }}
+          >
             {Object.entries(SKILLS).map(([cat, items]) => (
               <div key={cat}>
                 <div
-                  style={{
-                    fontSize: 12,
-                    fontWeight: 700,
-                    color: "rgba(232,237,232,0.35)",
-                    letterSpacing: "0.15em",
-                    textTransform: "uppercase",
-                    marginBottom: 14,
-                  }}
+                  className="lbl"
+                  style={{ color: "rgba(232,237,232,.35)", marginBottom: 12 }}
                 >
                   {cat}
                 </div>
-                <div style={{ display: "flex", flexWrap: "wrap", gap: 0 }}>
-                  {items.map((skill) => (
-                    <span key={skill} className="skill-pill">
-                      {skill}
+                <div style={{ display: "flex", flexWrap: "wrap" }}>
+                  {items.map((s) => (
+                    <span key={s} className="pill">
+                      {s}
                     </span>
                   ))}
                 </div>
@@ -851,47 +1021,42 @@ export default function Portfolio() {
 
       <div className="divider" />
 
-      {/* PROJECTS */}
+      {/* ══════════════════════════════════════════════════════════════════════
+          PROJECTS
+      ══════════════════════════════════════════════════════════════════════ */}
       <section
         id="projects"
-        className="section-pad"
+        className="sp"
         style={{ position: "relative", zIndex: 1 }}
       >
-        <div className="container">
+        <div className="wrap">
           <SectionLabel>Projects</SectionLabel>
-          <div className="grid-2">
+          <div className="g2">
             {PROJECTS.map((p, i) => (
               <div
                 key={i}
-                className="flip-card"
-                onClick={() => toggleFlip(i)}
-                title="Click to flip"
+                className="flip-wrap"
+                onClick={() => flip(i)}
+                onKeyDown={(e) => e.key === "Enter" && flip(i)}
+                role="button"
+                tabIndex={0}
+                aria-label={`${p.title} — ${
+                  isMobile ? "tap" : "click"
+                } to reveal`}
               >
-                <div className={`flip-inner ${flipped[i] ? "flipped" : ""}`}>
+                <div className={`flip-inner ${flipped[i] ? "done" : ""}`}>
                   <div
                     className="flip-face"
-                    style={{ background: "rgba(255,255,255,0.03)" }}
+                    style={{ background: "rgba(255,255,255,.03)" }}
                   >
-                    <div style={{ textAlign: "center", padding: "0 20px" }}>
+                    <div style={{ textAlign: "center" }}>
                       <div
-                        style={{
-                          fontSize: 12,
-                          color: "#B5F265",
-                          fontWeight: 700,
-                          letterSpacing: "0.1em",
-                          textTransform: "uppercase",
-                          marginBottom: 10,
-                        }}
+                        className="lbl"
+                        style={{ color: "#B5F265", marginBottom: 10 }}
                       >
                         {p.date}
                       </div>
-                      <h3
-                        style={{
-                          fontSize: 18,
-                          fontWeight: 700,
-                          marginBottom: 12,
-                        }}
-                      >
+                      <h3 className="t-h3" style={{ marginBottom: 12 }}>
                         {p.title}
                       </h3>
                       <div
@@ -911,10 +1076,10 @@ export default function Portfolio() {
                   <div className="flip-face flip-back">
                     <p
                       style={{
-                        fontSize: 13,
-                        color: "rgba(232,237,232,0.7)",
+                        fontSize: "clamp(12px,1.3vw,13px)",
+                        color: "rgba(232,237,232,.75)",
                         lineHeight: 1.7,
-                        fontFamily: "Lora, serif",
+                        fontFamily: "Lora,serif",
                       }}
                     >
                       {p.desc}
@@ -926,74 +1091,71 @@ export default function Portfolio() {
           </div>
           <p
             style={{
-              fontSize: 13,
-              color: "rgba(232,237,232,0.3)",
-              marginTop: 16,
+              fontSize: 12,
+              color: "rgba(232,237,232,.3)",
+              marginTop: 10,
               textAlign: "center",
             }}
           >
-            Click cards to reveal details
+            {isMobile ? "Tap" : "Click"} cards to reveal details
           </p>
         </div>
       </section>
 
       <div className="divider" />
 
-      {/* MMA */}
+      {/* ══════════════════════════════════════════════════════════════════════
+          MMA
+      ══════════════════════════════════════════════════════════════════════ */}
       <section
         id="mma"
-        className="section-pad"
+        className="sp"
         style={{ position: "relative", zIndex: 1 }}
       >
-        <div className="container">
+        <div className="wrap">
           <SectionLabel>Mixed Martial Arts</SectionLabel>
-          <div className="grid-2" style={{ alignItems: "start", gap: 64 }}>
+          <div
+            className="g2"
+            style={{ alignItems: "start", gap: "clamp(28px,5vw,68px)" }}
+          >
             <div>
               <h2
-                style={{
-                  fontSize: 36,
-                  fontWeight: 800,
-                  lineHeight: 1.15,
-                  marginBottom: 24,
-                  letterSpacing: "-0.02em",
-                }}
+                className="t-h2"
+                style={{ marginBottom: "clamp(14px,2.5vw,24px)" }}
               >
                 Where the
                 <br />
-                <span style={{ color: "#B5F265" }}>Mat Meets the Code</span>
+                <span className="green">Mat Meets the Code</span>
               </h2>
               <p
-                style={{
-                  fontSize: 16,
-                  lineHeight: 1.8,
-                  color: "rgba(232,237,232,0.65)",
-                  marginBottom: 28,
-                  fontFamily: "Lora, serif",
-                }}
+                className="t-body"
+                style={{ color: "rgba(232,237,232,.65)", marginBottom: 22 }}
               >
-                {MMA_CONTENT.bio}
+                Mixed Martial Arts isn't just a hobby — it's a discipline that
+                mirrors the demands of engineering. Both require systematic
+                thinking, composure under pressure, and a relentless drive to
+                improve.
               </p>
-              <div style={{ marginBottom: 28 }}>
+              <div>
                 <div
-                  style={{
-                    fontSize: 12,
-                    color: "rgba(232,237,232,0.35)",
-                    fontWeight: 700,
-                    letterSpacing: "0.12em",
-                    textTransform: "uppercase",
-                    marginBottom: 14,
-                  }}
+                  className="lbl"
+                  style={{ color: "rgba(232,237,232,.35)", marginBottom: 12 }}
                 >
                   Disciplines
                 </div>
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-                  {MMA_CONTENT.disciplines.map((d) => (
+                  {[
+                    "Brazilian Jiu-Jitsu",
+                    "Muay Thai",
+                    "Wrestling",
+                    "Boxing",
+                  ].map((d) => (
                     <span
                       key={d}
                       style={{
-                        border: "1px solid rgba(181,242,101,0.3)",
+                        border: "1px solid rgba(181,242,101,.3)",
                         color: "#B5F265",
-                        fontSize: 13,
+                        fontSize: "clamp(12px,1.3vw,13px)",
                         fontWeight: 600,
                         padding: "6px 14px",
                         borderRadius: 24,
@@ -1005,32 +1167,58 @@ export default function Portfolio() {
                 </div>
               </div>
             </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-              {MMA_CONTENT.values.map((v) => (
+
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: "clamp(10px,1.8vw,14px)",
+              }}
+            >
+              {MMA_VALUES.map((v) => (
                 <div
                   key={v.label}
                   style={{
                     display: "flex",
-                    gap: 16,
-                    padding: "20px 20px",
-                    border: "1px solid rgba(255,255,255,0.07)",
+                    gap: 14,
+                    padding: "clamp(14px,2.2vw,20px)",
+                    border: "1px solid rgba(255,255,255,.07)",
                     borderRadius: 14,
-                    background: "rgba(255,255,255,0.02)",
+                    background: "rgba(255,255,255,.02)",
                   }}
                 >
-                  <div className="mma-badge">{v.icon}</div>
-                  <div>
+                  <div
+                    style={{
+                      width: 50,
+                      height: 50,
+                      flexShrink: 0,
+                      background: "rgba(181,242,101,.1)",
+                      border: "1px solid rgba(181,242,101,.25)",
+                      borderRadius: 13,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontSize: 20,
+                    }}
+                  >
+                    {v.icon}
+                  </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
                     <div
-                      style={{ fontWeight: 700, fontSize: 15, marginBottom: 4 }}
+                      style={{
+                        fontWeight: 700,
+                        fontSize: "clamp(13px,1.5vw,15px)",
+                        marginBottom: 4,
+                      }}
                     >
                       {v.label}
                     </div>
                     <div
                       style={{
-                        fontSize: 13,
-                        color: "rgba(232,237,232,0.55)",
-                        lineHeight: 1.6,
-                        fontFamily: "Lora, serif",
+                        fontSize: "clamp(12px,1.3vw,13px)",
+                        color: "rgba(232,237,232,.55)",
+                        lineHeight: 1.65,
+                        fontFamily: "Lora,serif",
                       }}
                     >
                       {v.desc}
@@ -1045,61 +1233,58 @@ export default function Portfolio() {
 
       <div className="divider" />
 
-      {/* BLOG */}
+      {/* ══════════════════════════════════════════════════════════════════════
+          BLOG
+      ══════════════════════════════════════════════════════════════════════ */}
       <section
         id="blog"
-        className="section-pad"
+        className="sp"
         style={{ position: "relative", zIndex: 1 }}
       >
-        <div className="container">
+        <div className="wrap">
           <SectionLabel>Blog</SectionLabel>
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))",
-              gap: 20,
-            }}
-          >
+          <div className="bg">
             {BLOG_POSTS.map((post, i) => (
-              <div
-                key={i}
-                className="blog-card"
-                style={{ background: "rgba(255,255,255,0.02)" }}
-              >
+              <div key={i} className="blog-card">
                 <div
                   style={{
                     display: "flex",
                     justifyContent: "space-between",
                     alignItems: "center",
-                    marginBottom: 14,
+                    marginBottom: 12,
+                    gap: 8,
+                    flexWrap: "wrap",
                   }}
                 >
-                  <Tag color="rgba(181,242,101,0.1)" text="#B5F265">
+                  <Tag bg="rgba(181,242,101,.1)" color="#B5F265">
                     {post.category}
                   </Tag>
                   <span
-                    style={{ fontSize: 12, color: "rgba(232,237,232,0.3)" }}
+                    style={{
+                      fontSize: 11,
+                      color: "rgba(232,237,232,.3)",
+                      whiteSpace: "nowrap",
+                    }}
                   >
                     {post.readTime}
                   </span>
                 </div>
                 <h3
+                  className="t-h3"
                   style={{
-                    fontSize: 17,
-                    fontWeight: 700,
-                    lineHeight: 1.4,
-                    marginBottom: 12,
+                    marginBottom: 10,
+                    fontSize: "clamp(14px,1.8vw,17px)",
                   }}
                 >
                   {post.title}
                 </h3>
                 <p
                   style={{
-                    fontSize: 14,
-                    color: "rgba(232,237,232,0.55)",
-                    lineHeight: 1.7,
-                    marginBottom: 20,
-                    fontFamily: "Lora, serif",
+                    fontSize: "clamp(13px,1.4vw,14px)",
+                    color: "rgba(232,237,232,.55)",
+                    lineHeight: 1.72,
+                    marginBottom: 16,
+                    fontFamily: "Lora,serif",
                   }}
                 >
                   {post.excerpt}
@@ -1111,9 +1296,7 @@ export default function Portfolio() {
                     alignItems: "center",
                   }}
                 >
-                  <span
-                    style={{ fontSize: 12, color: "rgba(232,237,232,0.3)" }}
-                  >
+                  <span style={{ fontSize: 11, color: "rgba(232,237,232,.3)" }}>
                     {post.date}
                   </span>
                   <span
@@ -1130,43 +1313,41 @@ export default function Portfolio() {
 
       <div className="divider" />
 
-      {/* CONTACT */}
+      {/* ══════════════════════════════════════════════════════════════════════
+          CONTACT
+      ══════════════════════════════════════════════════════════════════════ */}
       <section
         id="contact"
-        className="section-pad"
+        className="sp"
         style={{ position: "relative", zIndex: 1 }}
       >
-        <div className="container">
+        <div className="wrap">
           <SectionLabel>Contact</SectionLabel>
-          <div className="grid-2" style={{ alignItems: "center", gap: 80 }}>
+          <div
+            className="g2"
+            style={{ alignItems: "center", gap: "clamp(28px,5vw,80px)" }}
+          >
             <div>
               <h2
-                style={{
-                  fontSize: 40,
-                  fontWeight: 800,
-                  lineHeight: 1.1,
-                  marginBottom: 20,
-                  letterSpacing: "-0.02em",
-                }}
+                className="t-h2"
+                style={{ marginBottom: "clamp(12px,2vw,20px)" }}
               >
                 Let's Build
                 <br />
-                <span style={{ color: "#B5F265" }}>Something Real</span>
+                <span className="green">Something Real</span>
               </h2>
               <p
+                className="t-body"
                 style={{
-                  fontSize: 16,
-                  color: "rgba(232,237,232,0.6)",
-                  lineHeight: 1.8,
-                  marginBottom: 32,
-                  fontFamily: "Lora, serif",
+                  color: "rgba(232,237,232,.6)",
+                  marginBottom: "clamp(22px,3.5vw,36px)",
                 }}
               >
                 Whether you need a rock-solid backend system, a
                 security-conscious API, or just want to talk shop — I'm ready.
               </p>
               <button
-                className="cta-btn"
+                className="btn-green"
                 onClick={() =>
                   window.open("mailto:abdulqowiyyuolamilekan@gmail.com")
                 }
@@ -1174,7 +1355,14 @@ export default function Portfolio() {
                 Send an Email
               </button>
             </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: "clamp(8px,1.4vw,12px)",
+              }}
+            >
               {[
                 {
                   icon: "✉",
@@ -1201,29 +1389,37 @@ export default function Portfolio() {
                   href: "#",
                 },
               ].map((c) => (
-                <a
-                  key={c.label}
-                  href={c.href}
-                  className="contact-item"
-                  style={{ textDecoration: "none", color: "inherit" }}
-                >
-                  <div className="contact-icon">
-                    <span>{c.icon}</span>
+                <a key={c.label} href={c.href} className="ci">
+                  <div
+                    style={{
+                      width: 36,
+                      height: 36,
+                      flexShrink: 0,
+                      background: "rgba(181,242,101,.08)",
+                      borderRadius: 10,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontSize: 16,
+                    }}
+                  >
+                    {c.icon}
                   </div>
-                  <div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
                     <div
-                      style={{
-                        fontSize: 11,
-                        color: "rgba(232,237,232,0.4)",
-                        fontWeight: 600,
-                        letterSpacing: "0.1em",
-                        textTransform: "uppercase",
-                      }}
+                      className="lbl"
+                      style={{ color: "rgba(232,237,232,.4)", marginBottom: 2 }}
                     >
                       {c.label}
                     </div>
                     <div
-                      style={{ fontSize: 14, color: "rgba(232,237,232,0.8)" }}
+                      style={{
+                        fontSize: "clamp(12px,1.3vw,13px)",
+                        color: "rgba(232,237,232,.8)",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        whiteSpace: "nowrap",
+                      }}
                     >
                       {c.val}
                     </div>
@@ -1235,37 +1431,44 @@ export default function Portfolio() {
         </div>
       </section>
 
-      {/* FOOTER */}
+      {/* ── FOOTER ─────────────────────────────────────────────────────────── */}
       <footer
         style={{
-          borderTop: "1px solid rgba(255,255,255,0.06)",
-          padding: "28px 0",
+          borderTop: "1px solid rgba(255,255,255,.06)",
+          padding: "clamp(18px,3.5vw,28px) 0",
           position: "relative",
           zIndex: 1,
         }}
       >
         <div
-          className="container"
+          className="wrap"
           style={{
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
             flexWrap: "wrap",
-            gap: 12,
+            gap: 8,
           }}
         >
-          <span style={{ fontSize: 13, color: "rgba(232,237,232,0.3)" }}>
+          <span
+            style={{
+              fontSize: "clamp(11px,1.2vw,13px)",
+              color: "rgba(232,237,232,.3)",
+            }}
+          >
             © {new Date().getFullYear()} Qowiyyu Olamilekan Adelaja
           </span>
-          <span style={{ fontSize: 13, color: "rgba(232,237,232,0.3)" }}>
+          <span
+            style={{
+              fontSize: "clamp(11px,1.2vw,13px)",
+              color: "rgba(232,237,232,.3)",
+              textAlign: "right",
+            }}
+          >
             Backend Engineer · MMA Practitioner · Lagos, NG
           </span>
         </div>
       </footer>
-
-      <style>{`
-        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
-      `}</style>
     </div>
   );
 }
