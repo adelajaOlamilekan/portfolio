@@ -154,7 +154,7 @@ const MMA_VALUES = [
 
 const STATS = [
   ["94%", "DB latency cut"],
-  ["3+", "years exp."],
+  ["5+", "years exp."],
   ["70%", "UX boost"],
   ["12+", "mentored"],
 ];
@@ -682,7 +682,7 @@ export default function Portfolio() {
             }}
           >
             Building scalable, high-performance systems across edtech,
-            e-commerce, and embedded domains. 3+ years of precision engineering
+            e-commerce, and embedded domains. 5+ years of precision engineering
             — and counting.
           </p>
 
@@ -1380,13 +1380,13 @@ export default function Portfolio() {
                   icon: "🔗",
                   label: "LinkedIn",
                   val: "linkedin.com/in/qowiyyu",
-                  href: "#",
+                  href: "https://www.linkedin.com/in/qowiyyuadelaja",
                 },
                 {
                   icon: "💻",
                   label: "GitHub",
                   val: "github.com/qowiyyu",
-                  href: "#",
+                  href: "https://github.com/adelajaOlamilekan",
                 },
               ].map((c) => (
                 <a key={c.label} href={c.href} className="ci">
