@@ -73,7 +73,7 @@ const EXPERIENCE = [
   },
   {
     company: "HNG / Hotels.ng",
-    role: "Backend Intern",
+    role: "Backend Engineer",
     period: "Mar 2023 – Sept 2023",
     type: "Remote",
     bullets: [
