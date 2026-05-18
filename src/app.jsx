@@ -89,7 +89,7 @@ const SKILLS = {
   Databases: ["PostgreSQL", "MySQL", "Redis"],
   Systems: ["REST API Design", "Redis Caching", "Celery", "Background Jobs"],
   Infrastructure: ["Docker", "Git", "Alembic", "SQLAlchemy", "Sentry"],
-  Languages: ["Python", "JavaScript", "TypeScript", "C++"],
+  Languages: ["Python", "JavaScript", "TypeScript", "C++", "C#"],
 };
 
 const PROJECTS = [
