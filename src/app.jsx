@@ -822,6 +822,7 @@ export default function Portfolio() {
                 style={{ color: "rgba(232,237,232,.65)", marginBottom: 16 }}
               >
                 I'm Qowiyyu — a software engineer focused on backend systems,
+<<<<<<< HEAD
                 distributed applications, REST APIs, and high-performance
                 services. I design scalable architectures, optimize database
                 workloads, and build reliable asynchronous systems.
@@ -831,6 +832,16 @@ export default function Portfolio() {
                 infrastructure, and IoT, with measurable results including 94%
                 lower API latency, 80% higher throughput, and 99.3% less
                 infrastructure setup effort.
+=======
+                distributed applications, REST APIs, and high-performance services.
+                I design scalable architectures, optimize database workloads, and
+                build reliable asynchronous systems.
+              </p>
+              <p className="t-body" style={{ color: "rgba(232,237,232,.65)" }}>
+                My work spans e-commerce, EdTech, SaaS, engineering infrastructure,
+                and IoT, with measurable results including 94% lower API latency,
+                80% higher throughput, and 99.3% less infrastructure setup effort.
+>>>>>>> 4b70228fa3b29c34f014217a1f4255086e835e21
               </p>
             </div>
 
