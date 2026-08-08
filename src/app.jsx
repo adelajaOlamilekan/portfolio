@@ -19,144 +19,99 @@ const EXPERIENCE = [
     period: "Aug 2025 – Present",
     type: "Hybrid",
     bullets: [
-      "Designing backend systems for automated infrastructure provisioning in Cadence-based EDA workflows",
-      "Reducing manual setup overhead and improving developer efficiency",
-      "Collaborating with cross-functional teams to test, debug, and improve LMS platform reliability",
+      "Architected and implemented backend services for a cloud-based EDA platform, reducing manual infrastructure setup effort by 99.3%",
+      "Built a cloud-based license management server using FlexLM, reducing licensing and infrastructure costs by 95%",
+      "Engineered a Windows desktop ECG viewer with BLE signal acquisition, visualization, and CSV export, reducing development time by 71.43%",
+      "Designed workflows spanning backend infrastructure, real-time data processing, hardware communication, and desktop applications",
     ],
   },
   {
     company: "Graphite Technologies",
     role: "Founding Engineer",
-    period: "Sept 2024 – Present",
+    period: "Sep 2024 – Present",
     type: "Remote",
     bullets: [
-      "Researched system-level vulnerabilities using Windows API hooking techniques",
-      "Mentored and trained 12+ engineers in backend development fundamentals",
-      "Built AI-driven course recommendation backend for a recruitment & talent coaching platform",
-      "Developed scalable backend for a speech therapy platform",
+      "Architected and shipped backend services for a recruitment and talent-coaching platform, including AI-driven course recommendation APIs",
+      "Designed scalable RESTful services for a multi-tenant speech-therapy platform, covering session management, audio-processing integration, and tenant isolation",
+      "Investigated system-level vulnerabilities in Windows environments using API-hooking techniques and proposed production mitigation strategies",
+      "Mentored 12+ engineers in backend fundamentals, code review discipline, and high-performance system design",
     ],
   },
   {
     company: "Ubuntu Farms",
     role: "Backend Engineer Lead",
-    period: "Nov 2024 – Feb 2025",
+    period: "Nov 2024 – May 2025",
     type: "Remote · Contract",
     bullets: [
-      "Architected high-traffic e-commerce backend supporting concurrent users and scalable transactions",
-      "Implemented fuzzy search with PostgreSQL GIN indexing, boosting user satisfaction by 70%",
-      "Designed Celery async workflows, reducing media upload wait time by 50%",
-      "Integrated Monnify payment gateway for secure transaction processing",
+      "Architected and built a high-traffic e-commerce backend supporting 10,000 concurrent users and high-volume transactions",
+      "Engineered fuzzy product search using PostgreSQL GIN indexing, improving search relevance and increasing user satisfaction by 70%",
+      "Designed asynchronous media-processing workflows with Celery and Redis, reducing average user wait time by 50%",
+      "Integrated multiple payment gateways using the Adapter pattern for reliable transaction processing",
+      "Established code-review standards and deployment checklists to maintain production code quality",
     ],
   },
   {
     company: "Qudra",
     role: "Backend Engineer",
-    period: "Sept 2024 – Nov 2024",
+    period: "Sep 2024 – Feb 2025",
     type: "Remote · Contract",
     bullets: [
-      "Led backend of large-scale exam platform for IELTS, TOEFL, JAMB, and WAEC",
-      "Resolved DB bottlenecks reducing latency from 500ms → 30ms (94% improvement)",
-      "Designed Redis caching system cutting score computation time by 40%",
-      "Implemented gamification features increasing user retention by 60%",
-    ],
-  },
-  {
-    company: "Smart Offsite Electric Meter",
-    role: "Backend & Embedded Engineer",
-    period: "Jun 2024 – Aug 2024",
-    type: "Remote · Contract",
-    bullets: [
-      "Designed backend for remote electricity purchase and device control, reducing transaction time by 70%",
-      "Built real-time energy consumption tracking improving user engagement by 60%",
-      "Implemented secure APIs for remote IoT device control",
+      "Led backend development for a large-scale examination platform supporting IELTS, TOEFL, JAMB, and WAEC, with real-time sessions for thousands of concurrent test-takers",
+      "Diagnosed and resolved production database bottlenecks using Sentry and query optimization, reducing API latency from 500ms to 30ms — a 94% improvement",
+      "Designed a Redis-based caching architecture for examination session state, reducing score-computation time by 40% and improving peak-load scalability",
+      "Implemented a gamification streak system that increased user retention by 60%, alongside document and audio conversion services",
+      "Developed analytics capabilities for user performance and engagement, enabling data-driven product decisions",
     ],
   },
   {
     company: "HNG / Hotels.ng",
     role: "Backend Engineer",
-    period: "Mar 2023 – Sept 2023",
+    period: "Mar 2023 – Mar 2024",
     type: "Remote",
     bullets: [
-      "Migrated legacy data with 97% accuracy while maintaining SEO integrity",
-      "Built backend services for a video recording and streaming platform",
-      "Improved system performance by 80% using Celery background processing",
+      "Executed a large-scale production data migration with 97% data accuracy while preserving SEO integrity across thousands of records",
+      "Built backend services for a video recording and live-streaming platform, handling media ingestion, encoding callbacks, and delivery APIs",
+      "Improved system throughput by 80% by offloading heavy processing to Celery background workers and freeing request threads",
+      "Developed a Windows desktop application for web crawling, downtime detection, and automated website alerts",
     ],
   },
 ];
 
 const SKILLS = {
-  Backend: ["FastAPI", "Django", "DRF", "Express"],
-  Databases: ["PostgreSQL", "MySQL", "Redis"],
-  Systems: ["REST API Design", "Redis Caching", "Celery", "Background Jobs"],
-  Infrastructure: ["Docker", "Git", "Alembic", "SQLAlchemy", "Sentry"],
-  Languages: ["Python", "JavaScript", "TypeScript", "C++", "C#", "Go", "Java"],
+  Languages: ["C#", "JavaScript", "TypeScript", "Python", "C++", "Golang", "SQL", "Shell Scripting", "HCL"],
+  "Backend & Web Services": ["ASP.NET Core", "Express.js", "FastAPI", "Django", "Django REST Framework", "REST API Design"],
+  "Databases & Storage": ["PostgreSQL", "MySQL", "Redis", "GIN Indexing", "Query Optimization"],
+  "Distributed Systems": ["RabbitMQ", "Celery", "Async Processing", "Background Jobs", "Redis Caching"],
+  Infrastructure: ["Docker", "AWS", "Terraform", "Git", "Sentry"],
+  "ORM & Migrations": ["SQLAlchemy", "Alembic"],
 };
 
 const PROJECTS = [
   {
-    title: "System Security Research",
-    date: "Aug 2024",
-    desc: "Conducted research on system-level vulnerabilities in secure browser environments, proposed mitigation techniques, and submitted a patch to prevent bot voting.",
-    tags: ["Security", "Windows API", "Browser"],
+    title: "Smart Offsite Controlled Electric Meter",
+    date: "Jun 2024",
+    desc: "Designed backend systems for remote electricity purchase and IoT device control, reducing end-to-end transaction time by 70% through optimized API design and event-driven communication. Built real-time energy consumption tracking and secure REST APIs with authentication and authorization.",
+    tags: ["Node.js", "IoT", "REST APIs", "Event-Driven"],
   },
   {
-    title: "Plagiarism Checker",
+    title: "System Security Research",
+    date: "Aug 2024",
+    desc: "Conducted independent research on system-level vulnerabilities in secure browser environments using Windows API hooking; proposed mitigation techniques and submitted a patch to prevent automated bot voting.",
+    tags: ["Security", "Windows API", "Systems"],
+  },
+  {
+    title: "Plagiarism Detection Engine",
     date: "Jul 2024",
-    desc: "Built a plagiarism detection engine using the Winnowing algorithm for document and code similarity analysis.",
+    desc: "Built a document and code similarity detection engine from scratch using the Winnowing algorithm, capable of identifying plagiarism across large text corpora with high precision.",
     tags: ["Python", "Algorithms", "NLP"],
   },
 ];
 
-const BLOG_POSTS = [
-  {
-    title: "How I Cut DB Latency by 94% with Query Optimization",
-    date: "Mar 2025",
-    category: "Engineering",
-    excerpt:
-      "A deep-dive into the Sentry-guided debugging process that took a 500ms query down to 30ms on a real-world exam platform.",
-    readTime: "8 min read",
-  },
-  {
-    title: "The Discipline of Code & Combat",
-    date: "Feb 2025",
-    category: "MMA + Engineering",
-    excerpt:
-      "What training martial arts taught me about building reliable backend systems — pressure, patience, and precision.",
-    readTime: "5 min read",
-  },
-  {
-    title: "Redis Caching Patterns for High-Traffic APIs",
-    date: "Jan 2025",
-    category: "Engineering",
-    excerpt:
-      "Practical patterns I've used across multiple production systems to implement Redis caching effectively.",
-    readTime: "6 min read",
-  },
-];
-
-const MMA_VALUES = [
-  {
-    label: "Discipline",
-    icon: "🔩",
-    desc: "Consistent training translates into consistent code.",
-  },
-  {
-    label: "Pressure Testing",
-    icon: "⚡",
-    desc: "Systems fail under load — so does technique. Both must be stress-tested.",
-  },
-  {
-    label: "Adaptation",
-    icon: "🔄",
-    desc: "Every opponent and every codebase is different. Adapt fast or lose.",
-  },
-];
-
 const STATS = [
-  ["94%", "DB latency cut"],
-  ["3+", "years exp."],
-  ["70%", "UX boost"],
-  ["12+", "mentored"],
+  ["94%", "API latency reduction"],
+  ["80%", "throughput increase"],
+  ["99.3%", "setup effort reduction"],
+  ["12+", "engineers mentored"],
 ];
 
 /* ─── HOOKS ──────────────────────────────────────────────────────────────── */
@@ -668,7 +623,7 @@ export default function Portfolio() {
             className="t-hero"
             style={{ marginBottom: "clamp(14px,2.5vh,24px)" }}
           >
-            Backend
+            Software
             <br />
             <span className="green">Engineer.</span>
           </h1>
@@ -788,39 +743,39 @@ export default function Portfolio() {
                 className="t-body"
                 style={{ color: "rgba(232,237,232,.65)", marginBottom: 16 }}
               >
-                I'm Qowiyyu — a backend engineer with a degree in Electrical and
-                Electronics Engineering from the University of Lagos (CGPA:
-                4.11/5.00). I build systems that don't flinch under load.
+                I'm Qowiyyu — a software engineer focused on backend systems,
+                distributed applications, REST APIs, and high-performance services.
+                I design scalable architectures, optimize database workloads, and
+                build reliable asynchronous systems.
               </p>
               <p className="t-body" style={{ color: "rgba(232,237,232,.65)" }}>
-                Outside the terminal, I train Mixed Martial Arts — a discipline
-                that's sharpened my thinking about resilience, adaptation, and
-                performing under pressure. Engineering and MMA demand the same
-                thing: relentless iteration.
+                My work spans e-commerce, EdTech, SaaS, engineering infrastructure,
+                and IoT, with measurable results including 94% lower API latency,
+                80% higher throughput, and 99.3% less infrastructure setup effort.
               </p>
             </div>
 
             <div className="ic">
               {[
                 {
-                  label: "University",
-                  val: "University of Lagos",
-                  sub: "B.Sc. Electrical & Electronics Eng.",
-                },
-                {
-                  label: "CGPA",
-                  val: "4.11 / 5.00",
-                  sub: "Second Class Upper Honours track",
-                },
-                {
-                  label: "Location",
-                  val: "Lagos, Nigeria",
-                  sub: "Open to remote",
-                },
-                {
-                  label: "Focus",
+                  label: "Specialization",
                   val: "Backend Systems",
-                  sub: "FastAPI · Django · Redis",
+                  sub: "Distributed & high-performance services",
+                },
+                {
+                  label: "Primary Stack",
+                  val: "C# · Node.js",
+                  sub: "ASP.NET Core · Express.js",
+                },
+                {
+                  label: "Databases",
+                  val: "PostgreSQL · Redis",
+                  sub: "Query optimization & caching",
+                },
+                {
+                  label: "Infrastructure",
+                  val: "AWS · Docker",
+                  sub: "Terraform · RabbitMQ · Sentry",
                 },
               ].map(({ label, val, sub }) => (
                 <div
@@ -1465,7 +1420,7 @@ export default function Portfolio() {
               textAlign: "right",
             }}
           >
-            Backend Engineer · MMA Practitioner · Lagos, NG
+            Software Engineer · Backend & Distributed Systems
           </span>
         </div>
       </footer>
